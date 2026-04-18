@@ -20,8 +20,11 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Create the SQLite database file
-RUN touch database/database.sqlite
+# Setup Environment and Database automatically
+RUN cp .env.example .env && \
+    php artisan key:generate && \
+    touch database/database.sqlite && \
+    php artisan migrate --force
 
 # Set proper permissions
 RUN chown -R www-data:www-data storage bootstrap/cache database
