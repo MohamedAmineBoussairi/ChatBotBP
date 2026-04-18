@@ -14,11 +14,17 @@ class ChatbotController extends Controller
         $faqPath = storage_path('app/faq.md');
         $faqContent = file_exists($faqPath) ? file_get_contents($faqPath) : 'No FAQ available.';
         
-        // Gemini 1.5 Flash has a massive 1 Million Token context window.
+        // Gemini 2.5 Flash has a massive 1 Million Token context window.
         // We can safely send a large chunk of your FAQ!
         $faqContent = mb_substr($faqContent, 0, 500000); 
 
         $apiKey = env('GEMINI_API_KEY');
+        if (empty($apiKey) || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
+            $apiKey = getenv('GEMINI_API_KEY');
+        }
+        if (empty($apiKey) || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
+            $apiKey = $_SERVER['GEMINI_API_KEY'] ?? $_ENV['GEMINI_API_KEY'] ?? '';
+        }
 
         if (!$apiKey || $apiKey == 'YOUR_GEMINI_KEY_HERE') {
             return response()->json([

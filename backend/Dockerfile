@@ -20,8 +20,9 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Setup Environment and Database automatically
-RUN cp .env.example .env && \
+# Setup Environment, Database, and PHP Config automatically
+RUN echo "variables_order = \"EGPCS\"" > /usr/local/etc/php/conf.d/render.ini && \
+    cp .env.example .env && \
     php artisan key:generate && \
     touch database/database.sqlite && \
     php artisan migrate --force
