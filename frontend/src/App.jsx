@@ -27,7 +27,11 @@ function App() {
     setLoading(true)
 
     try {
-      const response = await fetch('https://chatbotbp.onrender.com/api/chat', {
+      const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://127.0.0.1:8000/api/chat' 
+        : 'https://chatbotbp.onrender.com/api/chat';
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
