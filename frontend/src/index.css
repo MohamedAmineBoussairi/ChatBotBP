@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bp-orange: #ED7D31;
+  --color-bp-orange-light: #F18915;
+  --color-bp-brown: #4C342C;
+  --color-bp-brown-light: #5c3a21;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
