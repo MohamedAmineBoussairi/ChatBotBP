@@ -33,5 +33,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache database
 # Expose port 8000 for Render
 EXPOSE 8000
 
-# Start the built-in PHP server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Start the built-in PHP server by injecting the Render environment variable into .env first
+CMD echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env && php artisan serve --host=0.0.0.0 --port=8000
