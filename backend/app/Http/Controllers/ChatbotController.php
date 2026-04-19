@@ -74,7 +74,7 @@ class ChatbotController extends Controller
         } catch (\Exception $e) {
             Log::error('Gemini Exception: ' . $e->getMessage());
             return response()->json([
-                'reply' => 'Désolé, une exception s\'est produite lors de la connexion.'
+                'reply' => 'Désolé, une exception s\'est produite lors de la connexion. DEBUG: ' . $e->getMessage()
             ], 200);
         }
     }
