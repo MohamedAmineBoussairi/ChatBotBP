@@ -18,17 +18,13 @@ class ChatbotController extends Controller
         // We can safely send a large chunk of your FAQ!
         $faqContent = mb_substr($faqContent, 0, 500000); 
 
-        $apiKey = env('GEMINI_API_KEY');
-        if (empty($apiKey) || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
-            $apiKey = getenv('GEMINI_API_KEY');
-        }
-        if (empty($apiKey) || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
-            $apiKey = $_SERVER['GEMINI_API_KEY'] ?? $_ENV['GEMINI_API_KEY'] ?? '';
-        }
-
-        if (!$apiKey || $apiKey == 'YOUR_GEMINI_KEY_HERE') {
+        $apiKey = env('GEMINI_API_KEY') ?: $_SERVER['GEMINI_API_KEY'] ?? $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
+        
+        $apiKey = trim(str_replace('"', '', $apiKey)); // Remove any quotes or spaces
+        
+        if (!$apiKey || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
             return response()->json([
-                'reply' => 'L\'API Key Gemini est manquante. Veuillez la configurer dans le fichier .env.'
+                'reply' => 'Erreur: La variable d\'environnement GEMINI_API_KEY est introuvable sur ce serveur. (Debug: ' . json_encode(compact('apiKey')) . ')'
             ], 200);
         }
 
