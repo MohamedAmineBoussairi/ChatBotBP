@@ -14,9 +14,13 @@ class ChatbotController extends Controller
         $faqPath = storage_path('app/faq.md');
         $faqContent = file_exists($faqPath) ? file_get_contents($faqPath) : 'No FAQ available.';
         
+        // Ensure string is incredibly clean UTF-8 to avoid json_encode throwing exceptions.
+        // It removes null bytes and strictly converts it.
+        $faqContent = mb_convert_encoding($faqContent, 'UTF-8', 'auto');
+        $faqContent = iconv('UTF-8', 'UTF-8//IGNORE', $faqContent);
+        
         // Gemini 2.5 Flash has a massive 1 Million Token context window.
-        // We can safely send a large chunk of your FAQ!
-        $faqContent = mb_substr($faqContent, 0, 500000); 
+        $faqContent = mb_substr($faqContent, 0, 500000, 'UTF-8'); 
 
         $apiKey = env('GEMINI_API_KEY') ?: $_SERVER['GEMINI_API_KEY'] ?? $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
         
