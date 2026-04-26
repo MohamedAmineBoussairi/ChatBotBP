@@ -20,17 +20,15 @@ class ChatbotController extends Controller
         $faqContent = iconv('UTF-8', 'UTF-8//IGNORE', $faqContent);
         
         // Gemini 2.5 Flash has a massive 1 Million Token context window.
-        // We might want to limit this more for GPT-4o which usually has 128k limit, 
-        // 100k chars is well within safe limits.
-        $faqContent = mb_substr($faqContent, 0, 100000, 'UTF-8'); 
+        $faqContent = mb_substr($faqContent, 0, 500000, 'UTF-8'); 
 
-        $apiKey = env('GITHUB_TOKEN') ?: $_SERVER['GITHUB_TOKEN'] ?? $_ENV['GITHUB_TOKEN'] ?? getenv('GITHUB_TOKEN');
+        $apiKey = env('GEMINI_API_KEY') ?: $_SERVER['GEMINI_API_KEY'] ?? $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY');
         
         $apiKey = trim(str_replace('"', '', $apiKey)); // Remove any quotes or spaces
         
-        if (!$apiKey || $apiKey === 'YOUR_GITHUB_TOKEN_HERE') {
+        if (!$apiKey || $apiKey === 'YOUR_GEMINI_KEY_HERE') {
             return response()->json([
-                'reply' => 'Erreur: La variable d\'environnement GITHUB_TOKEN est introuvable sur ce serveur. (Debug: ' . json_encode(compact('apiKey')) . ')'
+                'reply' => 'Erreur: La variable d\'environnement GEMINI_API_KEY est introuvable sur ce serveur. (Debug: ' . json_encode(compact('apiKey')) . ')'
             ], 200);
         }
 
@@ -43,43 +41,42 @@ class ChatbotController extends Controller
         try {
             $systemInstruction = "Tu es l'assistant virtuel intelligent et officiel de la Banque Populaire Maroc. Tu es très intelligent et capable de converser de manière fluide, naturelle et courtoise avec les utilisateurs (comme répondre aux salutations, etc.) comme un humain normal. Pour toute question concernant la banque ou Chaabi Net, tu dois te baser en priorité sur les informations de la FAQ ci-dessous pour répondre de manière très professionnelle et utile, au format Markdown. Si une question n'est pas dans la FAQ, utilise tes connaissances générales pour aider le client de la meilleure façon possible tout en gardant ton rôle d'assistant bancaire. Voici la FAQ :\n" . $faqContent;
 
-            // Using GitHub Models API Endpoint for GPT-4o
+            // Using Google Gemini 2.5 Flash Endpoint
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . $apiKey,
-            ])->timeout(60)->post('https://models.inference.ai.azure.com/chat/completions', [
-                'model' => 'gpt-4o',
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => $systemInstruction
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $userMessage
+            ])->timeout(60)->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $apiKey, [
+                'system_instruction' => [
+                    'parts' => [
+                        ['text' => $systemInstruction]
                     ]
                 ],
-                'temperature' => 0.7,
-                'max_tokens' => 2000
+                'contents' => [
+                    [
+                        'role' => 'user',
+                        'parts' => [
+                            ['text' => $userMessage]
+                        ]
+                    ]
+                ]
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 
-                // OpenAI API response structure
-                $replyText = $data['choices'][0]['message']['content'] ?? 'Désolé, je n\'ai pas de réponse claire.';
+                // Gemini response structure
+                $replyText = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Désolé, je n\'ai pas de réponse claire.';
                 
                 return response()->json([
                     'reply' => $replyText
                 ]);
             } else {
-                Log::error('GitHub Models API Error: ' . $response->body());
+                Log::error('Gemini Error: ' . $response->body());
                 return response()->json([
-                    'reply' => 'Désolé, une erreur technique est survenue avec le modèle IA.'
+                    'reply' => 'Désolé, une erreur technique est survenue avec Google Gemini.'
                 ], 200);
             }
         } catch (\Exception $e) {
-            Log::error('GitHub Models API Exception: ' . $e->getMessage());
+            Log::error('Gemini Exception: ' . $e->getMessage());
             return response()->json([
                 'reply' => 'Désolé, une exception s\'est produite lors de la connexion. DEBUG: ' . $e->getMessage()
             ], 200);
