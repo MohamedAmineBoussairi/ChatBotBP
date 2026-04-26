@@ -39,7 +39,7 @@ class ChatbotController extends Controller
         }
 
         try {
-            $systemInstruction = "Tu es l'assistant virtuel officiel de la Banque Populaire Maroc. Utilises ces informations de la FAQ de Chaabi Net pour répondre aux questions des clients de manière très professionnelle, concise, et utile au format Markdown. Si l'information n'est pas dans la FAQ, indique avec politesse que tu ne connais pas la réponse. Voici la FAQ : \n" . $faqContent;
+            $systemInstruction = "Tu es l'assistant virtuel intelligent et officiel de la Banque Populaire Maroc. Tu es très intelligent et capable de converser de manière fluide, naturelle et courtoise avec les utilisateurs (comme répondre aux salutations, etc.) comme un humain normal. Pour toute question concernant la banque ou Chaabi Net, tu dois te baser en priorité sur les informations de la FAQ ci-dessous pour répondre de manière très professionnelle et utile, au format Markdown. Si une question n'est pas dans la FAQ, utilise tes connaissances générales pour aider le client de la meilleure façon possible tout en gardant ton rôle d'assistant bancaire. Voici la FAQ :\n" . $faqContent;
 
             // Using Google Gemini 2.5 Flash Endpoint
             $response = Http::withHeaders([
